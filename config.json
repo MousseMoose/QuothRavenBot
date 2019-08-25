@@ -1,0 +1,9 @@
+{
+	"discord": {
+		"token": "InsertTokenHere",
+		"alertRoles" : [] 
+	},
+	"sqlite" : {
+		"dbName": "QuothRaven.db"
+	}
+}
