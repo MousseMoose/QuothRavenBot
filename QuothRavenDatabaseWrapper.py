@@ -17,39 +17,47 @@ class QuothRavenDatabaseClient():
     def cleanup(self):
         self.conn.close()
 
-    def add_alert(self,user,date,message):
-        query = "INSERT INTO alerts ('userid','date', 'description') VALUES (:user,:date,:message);"
-        values = {"user": user, "date" : date,"message" : message}
-        return self.tryInsertQuery(query,values)
+    def add_alert(self, server, user, date, message):
+        query = "INSERT INTO alerts ('serverid','userid','date', 'description') VALUES (:serverid,:userid,:date,:message);"
+        values = {"serverid": server,"userid": user, "date" : date,"message" : message}
+        return self.try_insert_query(query,values)
 
-    def add_checkin(self,user,date,message):
-        query = "INSERT INTO checkins ('userid','date', 'description') VALUES (:user,:date,:message);"
-        values = {"user": user, "date": date, "message": message}
-        return self.tryInsertQuery(query,values)
+    def add_alertrole(self, server, role):
+        query = "INSERT INTO alertroles ('serverid','role') VALUES (:serverid,:role);"
+        values = {"serverid": server,"role": role}
+        return self.try_insert_query(query,values)
 
-    def get_checkins(self):
-        query = "SELECT * FROM checkins"
-        values = {}
-        return self.tryFetchQuery(query, values)
+    def add_checkin(self,server,user,date,message):
+        query = "INSERT INTO checkins ('serverid','userid','date', 'description') VALUES (:serverid,:userid,:date,:message);"
+        values = {"serverid": server,"userid": user, "date": date, "message": message}
+        return self.try_insert_query(query,values)
 
-    def get_checkins(self):
-        query = "SELECT * FROM checkins"
-        values = {}
-        return self.tryFetchQuery(query, values)
+    def remove_alertrole(self, server, role):
+        query = "DELETE FROM alertroles WHERE serverid = :serverid AND role = :role;"
+        values = {"serverid": server,"role": role}
+        return self.try_insert_query(query,values)
 
-    def get_last_checkins(self):
-        query = "SELECT * FROM checkins ORDER BY date DESC LIMIT 5"
-        values = {}
-        return self.tryFetchQuery(query, values)
+    def get_checkins(self, server):
+        query = "SELECT * FROM checkins WHERE serverid = :serverid"
+        values = {"serverid": server}
+        return self.try_fetch_query(query, values)
 
-    def get_alerts(self):
-        query = "SELECT * FROM alerts"
-        values = {}
-        return self.tryFetchQuery(query, values)
+    def get_last_checkins(self, server):
+        query = "SELECT * FROM checkins WHERE serverid = :serverid ORDER BY date DESC LIMIT 5"
+        values = {"serverid": server}
+        return self.try_fetch_query(query, values)
 
+    def get_alerts(self,server):
+        query = "SELECT * FROM alerts WHERE serverid = :serverid"
+        values = {"serverid": server}
+        return self.try_fetch_query(query, values)
 
+    def get_alertroles(self, server):
+        query = "SELECT * FROM alertroles WHERE serverid = :serverid"
+        values = {"serverid": server}
+        return self.try_fetch_query(query, values)
 
-    def tryInsertQuery(self,query,values):
+    def try_insert_query(self, query, values):
         status = None
         result = None
         try:
@@ -62,7 +70,7 @@ class QuothRavenDatabaseClient():
             status = False
         return queryResult(status,[])
 
-    def tryFetchQuery(self,query,values):
+    def try_fetch_query(self, query, values):
         status = None
         result = None
         try:
@@ -80,9 +88,11 @@ class QuothRavenDatabaseClient():
         self.cursor = self.conn.cursor()
         try:
             self.cursor.execute(
-                "CREATE TABLE IF NOT EXISTS alerts (id INTEGER PRIMARY KEY, userid INTEGER, date TEXT NOT NULL, description TEXT);")
+                "CREATE TABLE IF NOT EXISTS alerts (id INTEGER PRIMARY KEY,serverid INTEGER, userid INTEGER, date TEXT NOT NULL, description TEXT);")
             self.cursor.execute(
-                "CREATE TABLE IF NOT EXISTS checkins (id INTEGER PRIMARY KEY, userid INTEGER, date TEXT NOT NULL, description TEXT);")
+                "CREATE TABLE IF NOT EXISTS checkins (id INTEGER PRIMARY KEY,serverid INTEGER, userid INTEGER, date TEXT NOT NULL, description TEXT);")
+            self.cursor.execute(
+                "CREATE TABLE IF NOT EXISTS alertroles (serverid INTEGER, role TEXT, PRIMARY KEY(serverid,role));")
             self.conn.commit()
             self.cursor.execute("SELECT * FROM alerts")
             self.cursor.fetchall()
@@ -91,3 +101,6 @@ class QuothRavenDatabaseClient():
             self.dbOK = False
             print("db not ok")
             print(e)
+
+    def __del__(self):
+        self.cleanup()
