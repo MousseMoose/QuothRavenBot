@@ -43,7 +43,8 @@ class QuothRavenDatabaseClient:
         return self.try_fetch_query(query, values)
 
     def get_last_checkins(self, server):
-        query = "SELECT * FROM checkins WHERE serverid = :serverid ORDER BY date DESC LIMIT 5"
+        query = "SELECT date, userid, description FROM checkins WHERE serverid = :serverid ORDER BY date DESC LIMIT 5"
+        print(query,server)
         values = {"serverid": server}
         return self.try_fetch_query(query, values)
 
