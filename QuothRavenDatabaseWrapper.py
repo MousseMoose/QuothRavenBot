@@ -9,7 +9,7 @@ class queryResult:
         self.resultSet = resultSet
 
 
-class QuothRavenDatabaseClient():
+class QuothRavenDatabaseClient:
     conn = None
     cursor = None
     dbOK = None
@@ -23,8 +23,8 @@ class QuothRavenDatabaseClient():
         return self.try_insert_query(query,values)
 
     def add_alertrole(self, server, role):
-        query = "INSERT INTO alertroles ('serverid','role') VALUES (:serverid,:role);"
-        values = {"serverid": server,"role": role}
+        query = "INSERT INTO alertroles ('serverid','roleid') VALUES (:serverid,:roleid);"
+        values = {"serverid": server,"roleid": role}
         return self.try_insert_query(query,values)
 
     def add_checkin(self,server,user,date,message):
@@ -33,8 +33,8 @@ class QuothRavenDatabaseClient():
         return self.try_insert_query(query,values)
 
     def remove_alertrole(self, server, role):
-        query = "DELETE FROM alertroles WHERE serverid = :serverid AND role = :role;"
-        values = {"serverid": server,"role": role}
+        query = "DELETE FROM alertroles WHERE serverid = :serverid AND roleid = :roleid;"
+        values = {"serverid": server,"roleid": role}
         return self.try_insert_query(query,values)
 
     def get_checkins(self, server):
@@ -92,7 +92,7 @@ class QuothRavenDatabaseClient():
             self.cursor.execute(
                 "CREATE TABLE IF NOT EXISTS checkins (id INTEGER PRIMARY KEY,serverid INTEGER, userid INTEGER, date TEXT NOT NULL, description TEXT);")
             self.cursor.execute(
-                "CREATE TABLE IF NOT EXISTS alertroles (serverid INTEGER, role TEXT, PRIMARY KEY(serverid,role));")
+                "CREATE TABLE IF NOT EXISTS alertroles (serverid INTEGER, roleid INTEGER, PRIMARY KEY(serverid,roleid));")
             self.conn.commit()
             self.cursor.execute("SELECT * FROM alerts")
             self.cursor.fetchall()
@@ -101,6 +101,7 @@ class QuothRavenDatabaseClient():
             self.dbOK = False
             print("db not ok")
             print(e)
+
 
     def __del__(self):
         self.cleanup()
