@@ -29,7 +29,9 @@ class QuothRavenDiscordClient(discord.Client):
                 else:
                     print("role",role[1],"no longer exists on guild",role[0],"so it will be deleted")
                     self.dbc.remove_alertrole(role[0],role[1])
-            retstr += "Alert! " + msg
+            retstr += "\n```diff\n"
+            retstr += "-Alert! " + msg + "\n"
+            retstr += "```"
         date = datetime.datetime.now().isoformat()
         self.dbc.add_alert(dmsg.guild.id,dmsg.author.id,date,msg)
         return retstr
@@ -113,7 +115,8 @@ class QuothRavenDiscordClient(discord.Client):
         print('Username: {0.name}\nID: {0.id}'.format(self.user))
 
     async def on_message(self, message):
-        if message.content.startswith("!"):
+
+        if message.content.startswith("!") and isinstance(message.channel,discord.TextChannel):
             splt = self.handle_input(message.content)
             msg = self.dispatch_command(splt[0],splt[1],message)
             if len(msg)>0:

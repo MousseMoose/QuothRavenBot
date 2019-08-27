@@ -1,4 +1,3 @@
-
 import json
 from QuothRaven import QuothRavenDiscordClient
 
@@ -9,11 +8,9 @@ try:
 except Exception as e:
     print(e)
     quit()
-client = QuothRavenDiscordClient(configData["discord"]["alertRoles"])
+
+client = QuothRavenDiscordClient()
 client.run(configData["discord"]["token"])
-
-
-
 
 
 
