@@ -44,7 +44,6 @@ class QuothRavenDatabaseClient:
 
     def get_last_checkins(self, server):
         query = "SELECT date, userid, description FROM checkins WHERE serverid = :serverid ORDER BY date DESC LIMIT 5"
-        print(query,server)
         values = {"serverid": server}
         return self.try_fetch_query(query, values)
 
@@ -56,6 +55,16 @@ class QuothRavenDatabaseClient:
     def get_alertroles(self, server):
         query = "SELECT * FROM alertroles WHERE serverid = :serverid"
         values = {"serverid": server}
+        return self.try_fetch_query(query, values)
+
+    def add_statuschannel(self, server, channel):
+        query = "INSERT INTO statuschannels ('serverid','channelid') VALUES (:serverid,:channelid);"
+        values = {"serverid": server,"channelid": channel}
+        return self.try_insert_query(query,values)
+
+    def get_statuschannels(self):
+        query = "SELECT * FROM statuschannels"
+        values = {}
         return self.try_fetch_query(query, values)
 
     def try_insert_query(self, query, values):
@@ -94,6 +103,8 @@ class QuothRavenDatabaseClient:
                 "CREATE TABLE IF NOT EXISTS checkins (id INTEGER PRIMARY KEY,serverid INTEGER, userid INTEGER, date TEXT NOT NULL, description TEXT);")
             self.cursor.execute(
                 "CREATE TABLE IF NOT EXISTS alertroles (serverid INTEGER, roleid INTEGER, PRIMARY KEY(serverid,roleid));")
+            self.cursor.execute(
+                "CREATE TABLE IF NOT EXISTS statuschannels (serverid INTEGER, channelid INTEGER, PRIMARY KEY(serverid,channelid));")
             self.conn.commit()
             self.cursor.execute("SELECT * FROM alerts")
             self.cursor.fetchall()
