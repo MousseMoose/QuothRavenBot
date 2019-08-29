@@ -81,7 +81,7 @@ class QuothRavenDiscordClient(discord.Client):
                     name = dmsg.guild.get_member(ci[1]).nick
                     if name is None:
                         name = dmsg.guild.get_member(ci[1]).name
-                    retstr  += "+ " + ci[0][:-10] + " " + name + " " + ci[2] + "\n"
+                    retstr  += "+ " + ci[0][:-10] + " | " + name + " | " + ci[2] + "\n"
                 retstr += "```"
             else:
                 retstr = "Would you look at that: There are no check-ins on file."
@@ -149,7 +149,7 @@ class QuothRavenDiscordClient(discord.Client):
                     name = dmsg.guild.get_member(ci[1]).nick
                     if name is None:
                         name = dmsg.guild.get_member(ci[1]).name
-                    retstr += "+ " + ci[0][:-10] + " " + name + " " + ci[2] + "\n"
+                    retstr += "+ " + ci[0][:-10] + " | " + name + " | " + ci[2] + "\n"
                 retstr += "```"
             else:
                 retstr = "Would you look at that: There are no check-ins on file."
