@@ -119,7 +119,7 @@ class QuothRavenDiscordClient(discord.Client):
         return retstr
 
     async def update_statuschannel(self,dmsg):
-        channels = self.statuschannels[dmsg.guild.id]
+        channels = self.statuschannels.setdefault(dmsg.guild.id,[])
         for channel in channels:
             dchannel = dmsg.guild.get_channel(channel)
             dmsg_last = await dchannel.fetch_message(dchannel.last_message_id)
@@ -133,8 +133,28 @@ class QuothRavenDiscordClient(discord.Client):
                 await dchannel.send(summary)
         return
 
-    async def command_last_check_in(self,com,msg,dmsg):
+    async def command_last(self,com,msg,dmsg):
+        #todo: refactor and generalise to "get last x check-ins" function
         retstr = ""
+        rs = self.dbc.get_last_checkin(dmsg.guild.id)
+        if rs.queryStatus:
+            if len(rs.resultSet) > 0:
+                dt1 = datetime.datetime.now()
+                dt2 = datetime.datetime.fromisoformat(rs.resultSet[0][0])
+                tdiff = dt1-dt2
+                retstr+= "The last check-in was posted " + str(round(tdiff.seconds/3600,1)) + " hours ago. \n"
+                rs.resultSet = rs.resultSet[:1]
+                retstr += "```diff\n"
+                for ci in rs.resultSet:
+                    name = dmsg.guild.get_member(ci[1]).nick
+                    if name is None:
+                        name = dmsg.guild.get_member(ci[1]).name
+                    retstr += "+ " + ci[0][:-10] + " " + name + " " + ci[2] + "\n"
+                retstr += "```"
+            else:
+                retstr = "Would you look at that: There are no check-ins on file."
+        else:
+            retstr = "Ol' Data B. wouldn't give me the info. I'm afraid we'll have to do this another time."
         return retstr
 
     async def command_not_found(self,com,msg,dmsg):
@@ -184,5 +204,6 @@ class QuothRavenDiscordClient(discord.Client):
             '!alert': self.command_alert,
             '!summary': self.command_summary,
             '!addstatuschannel': self.command_add_statuschannel,
+            '!last': self.command_last,
         }
         super().__init__()

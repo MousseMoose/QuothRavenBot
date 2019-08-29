@@ -47,6 +47,11 @@ class QuothRavenDatabaseClient:
         values = {"serverid": server}
         return self.try_fetch_query(query, values)
 
+    def get_last_checkin(self, server):
+        query = "SELECT date, userid, description FROM checkins WHERE serverid = :serverid ORDER BY date DESC LIMIT 1"
+        values = {"serverid": server}
+        return self.try_fetch_query(query, values)
+
     def get_alerts(self,server):
         query = "SELECT * FROM alerts WHERE serverid = :serverid"
         values = {"serverid": server}
