@@ -24,11 +24,11 @@ class QuothRavenDiscordClient(discord.Client):
             for role in alertroles.resultSet:
                 drole = dmsg.guild.get_role(role[1])
                 if drole is not None:
-                    retstr += drole.mention + " "
+                    retstr += drole.mention
                 else:
                     print("role",role[1],"no longer exists on guild",role[0],"so it will be deleted")
                     self.dbc.remove_alertrole(role[0],role[1])
-            retstr += "\n```diff\n"
+            retstr += "```diff\n"
             retstr += "-Alert! " + msg + "\n"
             retstr += "```"
         date = datetime.datetime.now().isoformat()
@@ -50,13 +50,16 @@ class QuothRavenDiscordClient(discord.Client):
         roleid = int(msg)
         rs = self.dbc.remove_alertrole(dmsg.guild.id,roleid)
         drole = dmsg.guild.get_role(roleid)
-        if rs.queryStatus:
-            rolename = " "
-            if drole is not None:
-                rolename = " " + drole.name + " "
-            retstr = "Removed alert role" + rolename + "with id " + roleid
+        if drole is not None:
+            if rs.queryStatus:
+                rolename = " "
+                if drole is not None:
+                    rolename = " " + drole.name + " "
+                retstr = "Removed alerts for role" + rolename + "with id " + str(roleid)
+            else:
+                retstr = "I'm awfully sorry, but this one went belly-up. I couldn't delete that role."
         else:
-            retstr = "I'm awfully sorry, but this one went belly-up. I couldn't delete that role."
+            retstr = "I couldn't find this role."
         return retstr
 
     async def command_add_check_in(self,com,msg,dmsg):
@@ -226,6 +229,7 @@ class QuothRavenDiscordClient(discord.Client):
         self.commands = {
             '!checkin': self.command_add_check_in,
             '!addalertrole': self.command_add_alertrole,
+            '!removealertrole': self.command_remove_alertrole,
             '!alert': self.command_alert,
             '!summary': self.command_summary,
             '!addstatuschannel': self.command_add_statuschannel,
