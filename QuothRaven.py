@@ -118,6 +118,31 @@ class QuothRavenDiscordClient(discord.Client):
             retstr = "Curious. It appears the channel does not exist. At least I cannot see it."
         return retstr
 
+    async def command_remove_statuschannel(self,com,msg,dmsg):
+        retstr = ""
+        channel = int(msg)
+        dchannel = dmsg.guild.get_channel(channel)
+        if dchannel is not None:
+            if(self.remove_statuschannel(dmsg.guild,dchannel)):
+                retstr = "I shall not update the channel " + dchannel.name + " any longer."
+        else:
+            retstr = "I cannot find this channel."
+
+        return retstr
+
+    def remove_statuschannel(self,dguild,dchannel):
+        rs = self.dbc.remove_statuschannel(dguild.id,dchannel.id)
+        if(rs.queryStatus):
+            try:
+                self.statuschannels.setdefault(dguild.id,[]).remove(dchannel.id)
+                # todo: Maybe delete last message
+                return True
+            except ValueError as e:
+                # todo: Determine how much of a problem this case would be
+                return True
+        else:
+            return False
+
     async def update_statuschannel(self,dmsg):
         channels = self.statuschannels.setdefault(dmsg.guild.id,[])
         for channel in channels:
@@ -134,7 +159,7 @@ class QuothRavenDiscordClient(discord.Client):
         return
 
     async def command_last(self,com,msg,dmsg):
-        #todo: refactor and generalise to "get last x check-ins" function
+        # todo: refactor and generalise to "get last x check-ins" function
         retstr = ""
         rs = self.dbc.get_last_checkin(dmsg.guild.id)
         if rs.queryStatus:
@@ -204,6 +229,7 @@ class QuothRavenDiscordClient(discord.Client):
             '!alert': self.command_alert,
             '!summary': self.command_summary,
             '!addstatuschannel': self.command_add_statuschannel,
+            '!removestatuschannel': self.command_remove_statuschannel,
             '!last': self.command_last,
         }
         super().__init__()

@@ -20,4 +20,3 @@ client.run(configData["discord"]["token"])
 
 
 
-

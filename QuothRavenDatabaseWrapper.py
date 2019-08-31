@@ -67,6 +67,11 @@ class QuothRavenDatabaseClient:
         values = {"serverid": server,"channelid": channel}
         return self.try_insert_query(query,values)
 
+    def remove_statuschannel(self, server, channel):
+        query = "DELETE FROM statuschannels WHERE serverid = :serverid AND channelid = :channelid;"
+        values = {"serverid": server, "channelid": channel}
+        return self.try_insert_query(query,values)
+
     def get_statuschannels(self):
         query = "SELECT * FROM statuschannels"
         values = {}
