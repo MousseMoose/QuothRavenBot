@@ -75,17 +75,12 @@ class QuothRavenDiscordClient(discord.Client):
 
     async def command_summary(self,com,msg,dmsg):
         retstr = ""
-        rs = self.dbc.get_last_checkins(dmsg.guild.id)
+        rs = self.dbc.get_last_checkins(dmsg.guild.id,5)
         if rs.queryStatus:
             if len(rs.resultSet) > 0:
                 retstr = "Here's the latest: \n"
-                retstr += "```diff\n"
-                for ci in rs.resultSet:
-                    name = dmsg.guild.get_member(ci[1]).nick
-                    if name is None:
-                        name = dmsg.guild.get_member(ci[1]).name
-                    retstr  += "+ " + ci[0][:-10] + " | " + name + " | " + ci[2] + "\n"
-                retstr += "```"
+                retstr += await self.format_checkins(rs.resultSet,dmsg)
+
             else:
                 retstr = "Would you look at that: There are no check-ins on file."
         else:
@@ -164,25 +159,31 @@ class QuothRavenDiscordClient(discord.Client):
     async def command_last(self,com,msg,dmsg):
         # todo: refactor and generalise to "get last x check-ins" function
         retstr = ""
-        rs = self.dbc.get_last_checkin(dmsg.guild.id)
+        rs = self.dbc.get_last_checkins(dmsg.guild.id,1)
         if rs.queryStatus:
             if len(rs.resultSet) > 0:
                 dt1 = datetime.datetime.now()
                 dt2 = datetime.datetime.fromisoformat(rs.resultSet[0][0])
                 tdiff = dt1-dt2
-                retstr+= "The last check-in was posted " + str(round(tdiff.seconds/3600,1)) + " hours ago. \n"
+                retstr += "The last check-in was posted " + str(round(tdiff.seconds/3600,1)) + " hours ago. \n"
                 rs.resultSet = rs.resultSet[:1]
-                retstr += "```diff\n"
-                for ci in rs.resultSet:
-                    name = dmsg.guild.get_member(ci[1]).nick
-                    if name is None:
-                        name = dmsg.guild.get_member(ci[1]).name
-                    retstr += "+ " + ci[0][:-10] + " | " + name + " | " + ci[2] + "\n"
-                retstr += "```"
+                retstr += await self.format_checkins(rs.resultSet,dmsg)
             else:
                 retstr = "Would you look at that: There are no check-ins on file."
         else:
             retstr = "Ol' Data B. wouldn't give me the info. I'm afraid we'll have to do this another time."
+        return retstr
+
+    async def format_checkins(self,checkins,dmsg):
+        retstr = ""
+        retstr += "```diff\n"
+        for ci in checkins:
+            name = dmsg.guild.get_member(ci[1]).nick
+            if name is None:
+                name = dmsg.guild.get_member(ci[1]).name
+            datstr = "{0}-{1}-{2} {3}:{4}".format(ci[0][0:4], ci[0][5:7], ci[0][8:10], ci[0][11:13], ci[0][14:16])
+            retstr += "+ " + datstr + " | " + name + " | " + ci[2] + "\n"
+        retstr += "```"
         return retstr
 
     async def command_not_found(self,com,msg,dmsg):
